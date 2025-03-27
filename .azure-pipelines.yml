@@ -12,8 +12,9 @@ variables:
 steps:
 - task: UseDotNet@2
   inputs:
-    version: '9.x'  # alebo verzia .NET, ktorú používate
-    includePreviewVersions: true
+    packageType: 'sdk'
+    version: '5.x'  # alebo iná verzia, ktorú potrebujete
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - task: DotNetCoreCLI@2
   displayName: 'Restore NuGet packages'
