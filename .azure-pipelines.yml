@@ -24,41 +24,33 @@ steps:
   displayName: 'Build Project'
 
 - script: |
-    # Priama inštalácia prehliadačov cez dotnet CLI
+    # Zjednodušený prístup - priama manipulácia so súbormi
     cd $(System.DefaultWorkingDirectory)
     
-    # Vyhľadaj a vypíš informácie o projekte
-    echo "Current directory: $(pwd)"
-    ls -la
+    # Nainštalovať Playwright bez MS Build
+    PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright
+    echo "Setting PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH"
+    mkdir -p $PLAYWRIGHT_BROWSERS_PATH
     
-    # Inštaluj Playwright CLI lokálne pre projekt a potom prehliadač
-    dotnet new tool-manifest --force
-    dotnet tool install --local Microsoft.Playwright.CLI
-    dotnet tool run playwright install --with-deps chromium
+    # Nainštaluj Playwright CLI 
+    dotnet tool install --global Microsoft.Playwright.CLI
+
+    # Nainštaluj prehliadače do definovaného adresára
+    PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH playwright install chromium
     
-    # Vypíš obsah .playwright adresára
-    find $(System.DefaultWorkingDirectory) -name ".playwright" -type d | xargs ls -la 2>/dev/null || echo "No .playwright directory found"
+    # Vypíš obsah nainštalovaného adresára
+    echo "Installed Playwright browsers at $PLAYWRIGHT_BROWSERS_PATH:"
+    ls -la $PLAYWRIGHT_BROWSERS_PATH
+    ls -la $PLAYWRIGHT_BROWSERS_PATH/*
   displayName: 'Install Playwright Browsers'
 
 - script: |
-    # Diagnostika obsahu adresárov
-    echo "Checking Playwright installation"
-    find $(System.DefaultWorkingDirectory) -name ".playwright" -type d 
-    find $(System.DefaultWorkingDirectory) -path "*/.playwright/*" -name "chromium*" || echo "No chromium found"
-    
-    # Kopíruj nainštalované prehliadače do očakávaného adresára
-    echo "Checking bin directory structure"
-    find $(System.DefaultWorkingDirectory)/bin -type d
-    mkdir -p $(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)/net9.0/.playwright/
-    cp -R $(System.DefaultWorkingDirectory)/.playwright/* $(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)/net9.0/.playwright/ || echo "Failed to copy browsers"
-  displayName: 'Check and Fix Playwright Installation'
-
-- script: |
-    export PLAYWRIGHT_BROWSERS_PATH="$(System.DefaultWorkingDirectory)/.playwright"
-    echo "Setting PLAYWRIGHT_BROWSERS_PATH to: $PLAYWRIGHT_BROWSERS_PATH"
+    echo "PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright" >> $GITHUB_ENV
+    find $(System.DefaultWorkingDirectory)/.playwright -type d
     dotnet test --configuration $(buildConfiguration) --logger trx
   displayName: 'Run Tests'
   env:
+    # Nastav cestu k prehliadačom
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
     REPORT_DIRECTORY: '$(reportDirectory)'
 
