@@ -35,17 +35,8 @@ steps:
     projects: '**/testyCS.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
-- task: DotNetCoreCLI@2
-  displayName: 'Install Playwright CLI'
-  inputs:
-    command: 'custom'
-    custom: 'tool'
-    arguments: 'install --global Microsoft.Playwright.CLI'
-
-- script: |
-    dotnet-playwright install
-  displayName: 'Download Playwright browsers'
-  
+# Playtime MS recommend inštaláciu prehliadačov počas samotného spustenia testu
+# s vhodným parametrom. Inštalácia bude vykonaná automaticky.
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
   inputs:
@@ -54,7 +45,10 @@ steps:
     arguments: '--configuration $(buildConfiguration) --logger trx --results-directory "$(testResultsDirectory)"'
     publishTestResults: false  # Manuálne publikujeme výsledky
   env:
+    # Toto nastaví Playwright, aby nainštaloval prehliadače automaticky
     PLAYWRIGHT_BROWSERS_PATH: '0'
+    # Toto zabezpečí, že Playwright nainštaluje prehliadače
+    PLAYWRIGHT_INSTALL_BROWSERS: '1'
 
 - script: |
     echo "Test results directory content:"
