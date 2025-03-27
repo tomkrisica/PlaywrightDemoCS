@@ -2,11 +2,9 @@ trigger:
 - main  # alebo master, záleží od názvu vašej hlavnej vetvy
 
 pool:
-  vmImage: 'windows-latest'  # môžete použiť aj 'ubuntu-latest' ak preferujete Linux
+  vmImage: 'macos-latest'  # Použitie macOS ako hostovanej agentúry
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
 steps:
@@ -15,27 +13,6 @@ steps:
     packageType: 'sdk'
     version: '5.x'  # alebo iná verzia, ktorú potrebujete
     installationPath: $(Agent.ToolsDirectory)/dotnet
-
-- task: DotNetCoreCLI@2
-  displayName: 'Restore NuGet packages'
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Build'
-  inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Install Playwright browsers'
-  inputs:
-    command: 'custom'
-    custom: 'run'
-    projects: '**/*.csproj'
-    arguments: 'playwright install'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
