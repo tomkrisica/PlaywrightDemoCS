@@ -1,6 +1,13 @@
 trigger:
 - main  # alebo master, záleží od názvu vašej hlavnej vetvy
 
+schedules:
+- cron: "0 8 * * 5"  # Spustí sa každý piatok o 8:00
+  displayName: 'Weekly Friday Build'
+  branches:
+    include:
+    - main  # alebo iná vetva, ktorú chcete spúšťať
+
 pool:
   vmImage: 'macos-latest'  # Použitie macOS ako hostovanej agentúry
 
