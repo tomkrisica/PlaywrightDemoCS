@@ -1,0 +1,58 @@
+trigger:
+- main  # alebo master, záleží od názvu vašej hlavnej vetvy
+
+pool:
+  vmImage: 'windows-latest'  # môžete použiť aj 'ubuntu-latest' ak preferujete Linux
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    version: '9.x'  # alebo verzia .NET, ktorú používate
+    includePreviewVersions: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: PowerShell@2
+  displayName: 'Install Playwright browsers'
+  inputs:
+    targetType: 'inline'
+    script: |
+      pwsh -Command "& '$(Build.SourcesDirectory)/testyCS/bin/$(buildConfiguration)/net9.0/playwright.ps1' install"
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run Tests'
+  inputs:
+    command: 'test'
+    projects: '**/*[Tt]ests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+  env:
+    PLAYWRIGHT_BROWSERS_PATH: '0'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+
+- task: PublishBuildArtifacts@1
+  condition: succeededOrFailed()
+  inputs:
+    PathtoPublish: '$(Build.SourcesDirectory)/testyCS/test_report'
+    ArtifactName: 'test-results'
+    publishLocation: 'Container'
