@@ -6,88 +6,33 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  testResultsDirectory: '$(System.DefaultWorkingDirectory)/TestResults'
   reportDirectory: '$(System.DefaultWorkingDirectory)/test_report'
 
 steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.x'  # alebo iná verzia, ktorú potrebujete
+    version: '5.x'  # Verzia .NET SDK
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: |
     mkdir -p "$(reportDirectory)"
-    mkdir -p "$(testResultsDirectory)"
-    echo "System.DefaultWorkingDirectory: $(System.DefaultWorkingDirectory)"
-    echo "Build.SourcesDirectory: $(Build.SourcesDirectory)"
-    echo "Agent.BuildDirectory: $(Agent.BuildDirectory)"
-    echo "ReportDirectory: $(reportDirectory)"
-    ls -la $(System.DefaultWorkingDirectory)
-    ls -la $(Build.SourcesDirectory) || echo "Build.SourcesDirectory not found"
-    ls -la $(System.DefaultWorkingDirectory)/testyCS || echo "testyCS directory not found"
-  displayName: 'Create directories and list workspace'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Restore packages'
-  inputs:
-    command: 'restore'
-    projects: '**/testyCS.csproj'
-
-- task: DotNetCoreCLI@2
-  displayName: 'Build project'
-  inputs:
-    command: 'build'
-    projects: '**/testyCS.csproj'
-    arguments: '--configuration $(buildConfiguration)'
-
-# Playtime MS recommend inštaláciu prehliadačov počas samotného spustenia testu
-# s vhodným parametrom. Inštalácia bude vykonaná automaticky.
-- task: DotNetCoreCLI@2
-  displayName: 'Run Tests'
-  inputs:
-    command: 'test'
-    projects: '**/testyCS.csproj'
-    arguments: '--configuration $(buildConfiguration) --logger trx --results-directory "$(testResultsDirectory)" --verbosity normal'
-    publishTestResults: false  # Manuálne publikujeme výsledky
-  env:
-    # Toto nastaví Playwright, aby nainštaloval prehliadače automaticky
-    PLAYWRIGHT_BROWSERS_PATH: '0'
-    # Toto zabezpečí, že Playwright nainštaluje prehliadače
-    PLAYWRIGHT_INSTALL_BROWSERS: '1'
-    # Pridáme premennú prostredia pre adresár trace súborov
-    REPORT_DIRECTORY: '$(reportDirectory)'
+  displayName: 'Create test_report directory'
 
 - script: |
-    echo "Test results directory content:"
-    ls -la "$(testResultsDirectory)" || echo "Test results directory not found"
-    
-    echo "Report directory content:"
-    ls -la "$(reportDirectory)" || echo "Report directory not found"
-    
-    echo "Working directory content:"
-    ls -la "$(System.DefaultWorkingDirectory)" || echo "Working directory not found"
-    
-    echo "Current directory content:"
-    ls -la "." || echo "Current directory not accessible"
-    
-    echo "testyCS directory content:"
-    ls -la "./testyCS" || echo "testyCS directory not found"
-    
-    echo "testyCS/test_report directory content:"
-    ls -la "./testyCS/test_report" || echo "testyCS/test_report directory not found"
-    
-    echo "Searching for trace files in the entire workspace:"
-    find "$(System.DefaultWorkingDirectory)" -name "*.zip" -o -name "*.trace"
-  displayName: 'List test artifacts'
-  condition: succeededOrFailed()
+    dotnet test --configuration $(buildConfiguration) --logger trx
+  displayName: 'Run Tests'
+  env:
+    PLAYWRIGHT_BROWSERS_PATH: '0'
+    PLAYWRIGHT_INSTALL_BROWSERS: '1'
+    REPORT_DIRECTORY: '$(reportDirectory)'
 
 - task: PublishTestResults@2
   displayName: 'Publish test results'
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(testResultsDirectory)/**/*.trx'
+    testResultsFiles: '**/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: 'Playwright Tests'
 
@@ -97,12 +42,4 @@ steps:
   inputs:
     PathtoPublish: '$(reportDirectory)'
     ArtifactName: 'test-results'
-    publishLocation: 'Container'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish test results as artifacts'
-  condition: succeededOrFailed()
-  inputs:
-    PathtoPublish: '$(testResultsDirectory)'
-    ArtifactName: 'TestResults'
     publishLocation: 'Container'
