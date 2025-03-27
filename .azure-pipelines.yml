@@ -22,15 +22,30 @@ steps:
     ls -la $(System.DefaultWorkingDirectory)
   displayName: 'Create directories and list workspace'
 
-- script: |
-    dotnet tool install -g Microsoft.Playwright.CLI
-    dotnet restore
-  displayName: 'Install Playwright CLI and restore packages'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore packages'
+  inputs:
+    command: 'restore'
+    projects: '**/testyCS.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build project'
+  inputs:
+    command: 'build'
+    projects: '**/testyCS.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Install Playwright CLI'
+  inputs:
+    command: 'custom'
+    custom: 'tool'
+    arguments: 'install --global Microsoft.Playwright.CLI'
 
 - script: |
-    playwright install
-  displayName: 'Install Playwright browsers'
-
+    dotnet-playwright install
+  displayName: 'Download Playwright browsers'
+  
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
   inputs:
