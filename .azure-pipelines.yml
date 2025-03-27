@@ -24,16 +24,22 @@ steps:
   displayName: 'Build Project'
 
 - script: |
-    # Nainštaluj Playwright prehliadače pomocou MSBuild
-    dotnet build --target=AddPlaywrightBrowsers -p:PlaywrightBrowser="all"
+    # Priama inštalácia prehliadačov prostredníctvom PowerShell skriptu
+    cd $(System.DefaultWorkingDirectory)
+    dotnet build -t:Restore
+    cd bin/$(buildConfiguration)/net9.0
+    dotnet new tool-manifest || true
+    dotnet tool install --local Microsoft.Playwright.CLI
+    dotnet tool run playwright install --with-deps chromium
   displayName: 'Install Playwright Browsers'
 
 - script: |
-    # Výpis adresárovej štruktúry pre potreby diagnostiky
-    echo "Checking Playwright Browsers installation"
-    ls -la $(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)/net9.0 || echo "Directory not found"
-    find $(System.DefaultWorkingDirectory) -name "playwright" -type d
-    find $(System.DefaultWorkingDirectory) -name ".playwright" -type d
+    # Diagnostika obsahu adresárov
+    echo "Checking bin directory"
+    ls -la $(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)/net9.0
+    echo "Checking Playwright installation"
+    find $(System.DefaultWorkingDirectory) -name ".playwright" -type d | xargs ls -la 2>/dev/null || echo "No .playwright directory found"
+    find $(System.DefaultWorkingDirectory) -path "*/.playwright/*" -name "chromium*" 2>/dev/null || echo "No chromium found"
   displayName: 'Check Playwright Installation'
 
 - script: |
