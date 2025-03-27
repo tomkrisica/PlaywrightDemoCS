@@ -14,11 +14,15 @@ steps:
     version: '5.x'  # alebo iná verzia, ktorú potrebujete
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
+- script: |
+    mkdir -p $(System.DefaultWorkingDirectory)/testyCS/test_report
+  displayName: 'Create test_report directory'
+
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
   inputs:
     command: 'test'
-    projects: '**/*[Tt]ests/*.csproj'
+    projects: '**/testyCS.csproj'
     arguments: '--configuration $(buildConfiguration)'
   env:
     PLAYWRIGHT_BROWSERS_PATH: '0'
