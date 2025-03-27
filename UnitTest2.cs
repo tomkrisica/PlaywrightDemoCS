@@ -27,17 +27,42 @@ public class PowerAppsLoginCreateStudent
 
     private string CreateReportDir()
     {
-        // Používame absolútnu cestu pre adresár, aby sme zabezpečili, že adresár existuje a je na očakávanom mieste
-        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        Console.WriteLine($"BaseDirectory: {baseDir}");
+        // Skúsime najprv získať cestu z premennej prostredia, ktorá je nastavená v pipeline
+        string? envReportDir = Environment.GetEnvironmentVariable("REPORT_DIRECTORY");
         
-        // Ideme o 4 úrovne vyššie: bin/Release/net5.0 -> project root
-        string projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
-        Console.WriteLine($"ProjectRoot: {projectRoot}");
+        string reportDir;
+        if (!string.IsNullOrEmpty(envReportDir))
+        {
+            // Použijeme cestu z premennej prostredia, ak existuje
+            reportDir = envReportDir;
+            Console.WriteLine($"Používam adresár z premennej prostredia: {reportDir}");
+        }
+        else
+        {
+            // V prípade lokálneho spustenia alebo ak proměnná nie je nastavená
+            // použijeme relatívnu cestu od aktuálneho adresára
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            Console.WriteLine($"BaseDirectory: {baseDir}");
+            string projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
+            Console.WriteLine($"ProjectRoot: {projectRoot}");
+            reportDir = Path.Combine(projectRoot, "test_report");
+            Console.WriteLine($"ReportDir z BaseDirectory: {reportDir}");
+
+            // Alternatívne skúsiť použiť aktuálny adresár
+            string currentDir = Environment.CurrentDirectory;
+            Console.WriteLine($"CurrentDirectory: {currentDir}");
+            string altReportDir = Path.Combine(currentDir, "test_report");
+            Console.WriteLine($"Alternatívny ReportDir: {altReportDir}");
+            
+            // Použijeme alternatívnu cestu, ak vyzerá rozumnejšie
+            if (currentDir.Contains("testyCS") && !baseDir.Contains("testyCS"))
+            {
+                reportDir = altReportDir;
+                Console.WriteLine($"Používam alternatívnu cestu k adresáru pre report: {reportDir}");
+            }
+        }
         
-        string reportDir = Path.Combine(projectRoot, "test_report");
-        Console.WriteLine($"ReportDir: {reportDir}");
-        
+        // Vytvoríme adresár, ak neexistuje
         if (!Directory.Exists(reportDir))
         {
             Console.WriteLine($"Vytváram adresár: {reportDir}");
@@ -46,6 +71,21 @@ public class PowerAppsLoginCreateStudent
         else
         {
             Console.WriteLine($"Adresár už existuje: {reportDir}");
+        }
+        
+        // Pre istotu vypíšeme obsah adresára
+        try
+        {
+            string[] files = Directory.GetFiles(reportDir);
+            Console.WriteLine($"Počet súborov v adresári: {files.Length}");
+            foreach (string file in files)
+            {
+                Console.WriteLine($"Súbor: {file}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Chyba pri výpise obsahu adresára: {ex.Message}");
         }
         
         return reportDir;
