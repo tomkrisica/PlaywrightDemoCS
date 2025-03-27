@@ -6,6 +6,8 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  testResultsDirectory: '$(System.DefaultWorkingDirectory)/TestResults'
+  reportDirectory: '$(System.DefaultWorkingDirectory)/testyCS/test_report'
 
 steps:
 - task: UseDotNet@2
@@ -15,34 +17,60 @@ steps:
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: |
-    mkdir -p $(System.DefaultWorkingDirectory)/testyCS/test_report
-  displayName: 'Create test_report directory'
+    mkdir -p "$(reportDirectory)"
+    mkdir -p "$(testResultsDirectory)"
+    ls -la $(System.DefaultWorkingDirectory)
+  displayName: 'Create directories and list workspace'
+
+- script: |
+    dotnet tool install -g Microsoft.Playwright.CLI
+    dotnet restore
+  displayName: 'Install Playwright CLI and restore packages'
+
+- script: |
+    playwright install
+  displayName: 'Install Playwright browsers'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
   inputs:
     command: 'test'
     projects: '**/testyCS.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    arguments: '--configuration $(buildConfiguration) --logger trx --results-directory "$(testResultsDirectory)"'
+    publishTestResults: false  # Manuálne publikujeme výsledky
   env:
     PLAYWRIGHT_BROWSERS_PATH: '0'
 
+- script: |
+    echo "Test results directory content:"
+    ls -la "$(testResultsDirectory)" || echo "Test results directory not found"
+    
+    echo "Report directory content:"
+    ls -la "$(reportDirectory)" || echo "Report directory not found"
+  displayName: 'List test artifacts'
+  condition: succeededOrFailed()
+
 - task: PublishTestResults@2
+  displayName: 'Publish test results'
   condition: succeededOrFailed()
   inputs:
-    testRunner: VSTest
-    testResultsFiles: '**/*.trx'
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '$(testResultsDirectory)/**/*.trx'
+    failTaskOnFailedTests: false
+    testRunTitle: 'Playwright Tests'
 
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish test reports'
   condition: succeededOrFailed()
   inputs:
-    PathtoPublish: '$(System.DefaultWorkingDirectory)/testyCS/test_report'
+    PathtoPublish: '$(reportDirectory)'
     ArtifactName: 'test-results'
     publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish test results as artifacts'
   condition: succeededOrFailed()
   inputs:
-    PathtoPublish: '$(Build.SourcesDirectory)/testyCS/test_report'
-    ArtifactName: 'TraceFiles'
+    PathtoPublish: '$(testResultsDirectory)'
+    ArtifactName: 'TestResults'
     publishLocation: 'Container'

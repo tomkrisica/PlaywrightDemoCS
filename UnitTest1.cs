@@ -27,11 +27,27 @@ public class PowerAppsLoginTests
 
     private string CreateReportDir()
     {
-        string reportDir = "test_report";
+        // Používame absolútnu cestu pre adresár, aby sme zabezpečili, že adresár existuje a je na očakávanom mieste
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        Console.WriteLine($"BaseDirectory: {baseDir}");
+        
+        // Ideme o 4 úrovne vyššie: bin/Release/net5.0 -> project root
+        string projectRoot = Path.GetFullPath(Path.Combine(baseDir, "..", "..", ".."));
+        Console.WriteLine($"ProjectRoot: {projectRoot}");
+        
+        string reportDir = Path.Combine(projectRoot, "test_report");
+        Console.WriteLine($"ReportDir: {reportDir}");
+        
         if (!Directory.Exists(reportDir))
         {
+            Console.WriteLine($"Vytváram adresár: {reportDir}");
             Directory.CreateDirectory(reportDir);
         }
+        else
+        {
+            Console.WriteLine($"Adresár už existuje: {reportDir}");
+        }
+        
         return reportDir;
     }
 
