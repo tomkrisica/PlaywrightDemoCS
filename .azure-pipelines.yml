@@ -28,12 +28,13 @@ steps:
     projects: '**/*.csproj'
     arguments: '--configuration $(buildConfiguration)'
 
-- task: PowerShell@2
+- task: DotNetCoreCLI@2
   displayName: 'Install Playwright browsers'
   inputs:
-    targetType: 'inline'
-    script: |
-      pwsh -Command "& '$(Build.SourcesDirectory)/testyCS/bin/$(buildConfiguration)/net9.0/playwright.ps1' install"
+    command: 'custom'
+    custom: 'run'
+    projects: '**/*.csproj'
+    arguments: 'playwright install'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run Tests'
