@@ -12,12 +12,19 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '9.x'  # Verzia .NET SDK
+    version: '9.x'  # Verzia .NET SDK (zodpovedá vášmu projektu)
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
 - script: |
     mkdir -p "$(reportDirectory)"
   displayName: 'Create test_report directory'
+
+- script: |
+    # Explicitná inštalácia Playwright prehliadačov pred spustením testov
+    dotnet build --configuration $(buildConfiguration)
+    dotnet tool install --global Microsoft.Playwright.CLI
+    playwright install chromium
+  displayName: 'Build and Install Playwright Browsers'
 
 - script: |
     dotnet test --configuration $(buildConfiguration) --logger trx
