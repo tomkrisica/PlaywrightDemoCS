@@ -20,18 +20,27 @@ steps:
   displayName: 'Create test_report directory'
 
 - script: |
-    # Explicitná inštalácia Playwright prehliadačov pred spustením testov
     dotnet build --configuration $(buildConfiguration)
-    dotnet tool install --global Microsoft.Playwright.CLI
-    playwright install chromium
-  displayName: 'Build and Install Playwright Browsers'
+  displayName: 'Build Project'
+
+- script: |
+    # Nainštaluj Playwright prehliadače pomocou MSBuild
+    dotnet build --target=AddPlaywrightBrowsers -p:PlaywrightBrowser="all"
+  displayName: 'Install Playwright Browsers'
+
+- script: |
+    # Výpis adresárovej štruktúry pre potreby diagnostiky
+    echo "Checking Playwright Browsers installation"
+    ls -la $(System.DefaultWorkingDirectory)/bin/$(buildConfiguration)/net9.0 || echo "Directory not found"
+    find $(System.DefaultWorkingDirectory) -name "playwright" -type d
+    find $(System.DefaultWorkingDirectory) -name ".playwright" -type d
+  displayName: 'Check Playwright Installation'
 
 - script: |
     dotnet test --configuration $(buildConfiguration) --logger trx
   displayName: 'Run Tests'
   env:
-    PLAYWRIGHT_BROWSERS_PATH: '0'
-    PLAYWRIGHT_INSTALL_BROWSERS: '1'
+    PLAYWRIGHT_BROWSERS_PATH: '0'  # Používaj štandardnú cestu
     REPORT_DIRECTORY: '$(reportDirectory)'
 
 - task: PublishTestResults@2
