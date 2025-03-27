@@ -54,7 +54,7 @@ steps:
 - task: PublishBuildArtifacts@1
   condition: succeededOrFailed()
   inputs:
-    PathtoPublish: '$(Build.SourcesDirectory)/testyCS/test_report'
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/testyCS/test_report'
     ArtifactName: 'test-results'
     publishLocation: 'Container'
 
