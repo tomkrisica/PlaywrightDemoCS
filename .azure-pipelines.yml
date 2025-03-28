@@ -98,31 +98,13 @@ steps:
 
 
 - task: PublishTestResults@2
-  displayName: 'Publish test $(test1Title) results'
+  displayName: 'Publish test results'
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
     testResultsFiles: '**/*.trx'
     failTaskOnFailedTests: false
-    testRunTitle: '$(test1Title)'
-
-- task: PublishTestResults@2
-  displayName: 'Publish test $(test2Title) results'
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'VSTest'
-    testResultsFiles: '**/*.trx'
-    failTaskOnFailedTests: false
-    testRunTitle: '$(test2Title)'
-
-- task: PublishTestResults@2
-  displayName: 'Publish test $(test3Title) results'
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: 'VSTest'
-    testResultsFiles: '**/*.trx'
-    failTaskOnFailedTests: false
-    testRunTitle: '$(test3Title)'
+    testRunTitle: 'Tests '
 
 #Publish all tests
 - task: PublishBuildArtifacts@1
