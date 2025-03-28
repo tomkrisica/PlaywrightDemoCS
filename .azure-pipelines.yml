@@ -57,7 +57,27 @@ steps:
     echo "PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright" >> $GITHUB_ENV
     find $(System.DefaultWorkingDirectory)/.playwright -type d
     dotnet test --configuration $(buildConfiguration) --logger trx --filter "FullyQualifiedName=PowerAppsLoginTests.Test_PowerAppsLogin"
-  displayName: 'Run Test: Test_PowerAppsLogin'
+  displayName: 'Run Test: Test_PowerAppsLogin' #change name of test
+  env:
+    PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
+    REPORT_DIRECTORY: '$(reportDirectory)'
+
+#test2
+- script: |
+    echo "PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright" >> $GITHUB_ENV
+    find $(System.DefaultWorkingDirectory)/.playwright -type d
+    dotnet test --configuration $(buildConfiguration) --logger trx --filter "FullyQualifiedName=PowerAppsLoginCreateStudent.Test_PowerAppsCreateStudent"
+  displayName: 'Run Test: Test_PowerAppsCreateStudent' #change name of test
+  env:
+    PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
+    REPORT_DIRECTORY: '$(reportDirectory)'
+
+#test3
+- script: |
+    echo "PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright" >> $GITHUB_ENV
+    find $(System.DefaultWorkingDirectory)/.playwright -type d
+    dotnet test --configuration $(buildConfiguration) --logger trx --filter "FullyQualifiedName=PowerAppsLoginCreateStudentInvalidPhone.Test_PowerAppsCreateStudentInvalidPhone"
+  displayName: 'Run Test: Test_PowerAppsCreateStudentInvalidPhone' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
     REPORT_DIRECTORY: '$(reportDirectory)'
