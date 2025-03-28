@@ -31,19 +31,11 @@ steps:
 #Create directories
 - script: |
     mkdir -p "$(reportDirectory)"
-  displayName: 'Create test_report directory'
-
-- script: |
     mkdir -p "$(reportDirectory)/$(test1Title)"
-  displayName: 'Create $(test1Title) directory'
-
-- script: |
     mkdir -p "$(reportDirectory)/$(test2Title)"
-  displayName: 'Create $(test2Title) directory'
-
-- script: |
     mkdir -p "$(reportDirectory)/$(test3Title)"
-  displayName: 'Create $(test3Title) directory'
+  displayName: 'Create test report directories'
+
 
 
 
