@@ -7,7 +7,7 @@ schedules:
   displayName: 'Weekly Friday Build'
   branches:
     include:
-    - main  # alebo iná vetva, ktorú chcete spúšťať
+    - test1  # alebo iná vetva, ktorú chcete spúšťať
 
 pool:
   vmImage: 'macos-latest'  # Použitie macOS ako hostovanej agentúry
@@ -52,13 +52,13 @@ steps:
     ls -la $PLAYWRIGHT_BROWSERS_PATH/*
   displayName: 'Install Playwright Browsers'
 
+#test 1
 - script: |
     echo "PLAYWRIGHT_BROWSERS_PATH=$(System.DefaultWorkingDirectory)/.playwright" >> $GITHUB_ENV
     find $(System.DefaultWorkingDirectory)/.playwright -type d
-    dotnet test --configuration $(buildConfiguration) --logger trx
-  displayName: 'Run Tests'
+    dotnet test --configuration $(buildConfiguration) --logger trx --filter "FullyQualifiedName=PowerAppsLoginTests.Test_PowerAppsLogin"
+  displayName: 'Run Test: Test_PowerAppsLogin'
   env:
-    # Nastav cestu k prehliadačom
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
     REPORT_DIRECTORY: '$(reportDirectory)'
 
