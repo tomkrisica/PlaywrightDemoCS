@@ -2,7 +2,7 @@ trigger:
 - main  # alebo master, záleží od názvu vašej hlavnej vetvy
 
 schedules:
-- cron: "0 8 * * 5"  # Spustí sa každý piatok o 8:00
+- cron: "0 9 * * 5"  # Spustí sa každý piatok o 8:00
   displayName: 'Weekly Friday Build'
   branches:
     include:
