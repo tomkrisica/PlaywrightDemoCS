@@ -28,9 +28,26 @@ steps:
     version: '9.x'  # Verzia .NET SDK (zodpovedá vášmu projektu)
     installationPath: $(Agent.ToolsDirectory)/dotnet
 
+#Create directories
 - script: |
     mkdir -p "$(reportDirectory)"
   displayName: 'Create test_report directory'
+
+- script: |
+    mkdir -p "$(reportDirectory)/$(test1Title)"
+  displayName: 'Create $(test1Title) directory'
+
+- script: |
+    mkdir -p "$(reportDirectory)/$(test2Title)"
+  displayName: 'Create $(test2Title) directory'
+
+- script: |
+    mkdir -p "$(reportDirectory)/$(test3Title)"
+  displayName: 'Create $(test3Title) directory'
+
+
+
+
 
 - script: |
     dotnet build --configuration $(buildConfiguration)
@@ -67,7 +84,7 @@ steps:
   displayName: 'Run Test: $(test1Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)'
+    REPORT_DIRECTORY: '$(reportDirectory)/$(test1Title)'
 
 #test2
 - script: |
@@ -77,7 +94,7 @@ steps:
   displayName: 'Run Test: $(test2Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)'
+    REPORT_DIRECTORY: '$(reportDirectory)/$(test2Title)'
 
 #test3
 - script: |
@@ -87,14 +104,16 @@ steps:
   displayName: 'Run Test: $(test3Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)'
+    REPORT_DIRECTORY: '$(reportDirectory)/$(test3Title)'
+
+
 
 - task: PublishTestResults@2
   displayName: 'Publish test $(test1Title) results'
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/*.trx'
+    testResultsFiles: '$(reportDirectory)/$(test1Title)/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test1Title)'
 
@@ -103,7 +122,7 @@ steps:
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/*.trx'
+    testResultsFiles: '$(reportDirectory)/$(test1Title)/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test2Title)'
 
@@ -112,14 +131,31 @@ steps:
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/*.trx'
+    testResultsFiles: '$(reportDirectory)/$(test1Title)/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test3Title)'
 
+#Publish all tests
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish test reports'
+  displayName: 'Publish $(test1Title) reports'
   condition: succeededOrFailed()
   inputs:
-    PathtoPublish: '$(reportDirectory)'
+    PathtoPublish: '$(reportDirectory)/$(test1Title)'
+    ArtifactName: 'test-results'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish $(test2Title) reports'
+  condition: succeededOrFailed()
+  inputs:
+    PathtoPublish: '$(reportDirectory)/$(test2Title)'
+    ArtifactName: 'test-results'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish $(test3Title) reports'
+  condition: succeededOrFailed()
+  inputs:
+    PathtoPublish: '$(reportDirectory)/$(test3Title)'
     ArtifactName: 'test-results'
     publishLocation: 'Container'
