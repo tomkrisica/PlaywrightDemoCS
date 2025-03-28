@@ -31,9 +31,6 @@ steps:
 #Create directories
 - script: |
     mkdir -p "$(reportDirectory)"
-    mkdir -p "$(reportDirectory)/$(test1Title)"
-    mkdir -p "$(reportDirectory)/$(test2Title)"
-    mkdir -p "$(reportDirectory)/$(test3Title)"
   displayName: 'Create test report directories'
 
 
@@ -76,7 +73,7 @@ steps:
   displayName: 'Run Test: $(test1Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)/$(test1Title)'
+    REPORT_DIRECTORY: '$(reportDirectory)'
 
 #test2
 - script: |
@@ -86,7 +83,7 @@ steps:
   displayName: 'Run Test: $(test2Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)/$(test2Title)'
+    REPORT_DIRECTORY: '$(reportDirectory)'
 
 #test3
 - script: |
@@ -96,7 +93,7 @@ steps:
   displayName: 'Run Test: $(test3Title)' #change name of test
   env:
     PLAYWRIGHT_BROWSERS_PATH: "$(System.DefaultWorkingDirectory)/.playwright"
-    REPORT_DIRECTORY: '$(reportDirectory)/$(test3Title)'
+    REPORT_DIRECTORY: '$(reportDirectory)'
 
 
 
@@ -105,7 +102,7 @@ steps:
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/$(test1Title)/*.trx'
+    testResultsFiles: '**/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test1Title)'
 
@@ -114,7 +111,7 @@ steps:
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/$(test2Title)/*.trx'
+    testResultsFiles: '**/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test2Title)'
 
@@ -123,31 +120,15 @@ steps:
   condition: succeededOrFailed()
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '$(reportDirectory)/$(test3Title)/*.trx'
+    testResultsFiles: '**/*.trx'
     failTaskOnFailedTests: false
     testRunTitle: '$(test3Title)'
 
 #Publish all tests
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish $(test1Title) reports'
+  displayName: 'Publish test reports'
   condition: succeededOrFailed()
   inputs:
-    PathtoPublish: '$(reportDirectory)/$(test1Title)'
-    ArtifactName: 'test-results'
-    publishLocation: 'Container'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish $(test2Title) reports'
-  condition: succeededOrFailed()
-  inputs:
-    PathtoPublish: '$(reportDirectory)/$(test2Title)'
-    ArtifactName: 'test-results'
-    publishLocation: 'Container'
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish $(test3Title) reports'
-  condition: succeededOrFailed()
-  inputs:
-    PathtoPublish: '$(reportDirectory)/$(test3Title)'
+    PathtoPublish: '$(reportDirectory)'
     ArtifactName: 'test-results'
     publishLocation: 'Container'
